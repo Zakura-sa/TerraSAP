@@ -6,8 +6,6 @@ TerraSAP is a spatially aware prompt-based framework for few-shot class-incremen
 - New Class-Aware Classifier (NCAC)
 - Dual-Path Exponential Moving Average (DPEMA)
 
-This repository is intended to contain source code, experiment configs, and data-preparation scripts only. Datasets, checkpoints, logs, t-SNE arrays, and generated paper artifacts are intentionally ignored by Git.
-
 ## Release Note
 
 The trained deployment files and model checkpoints were originally kept on a server, but those files were not preserved correctly and are no longer available. This public version was reconstructed and completed from an earlier saved code backup. It is provided as a cleaned research-code release for reproducing and extending the TerraSAP experiments; pretrained or trained TerraSAP checkpoints are not included.
