@@ -1,0 +1,42 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Environments
+.venv/
+venv/
+env/
+*.egg-info/
+
+# Experiment data and outputs
+data/
+tsne_data/
+logs/
+saved_model/
+checkpoints/
+outputs/
+results/
+release/
+*.log
+*_log
+*.pth
+*.pt
+*.ckpt
+*.npy
+
+# Paper/build artifacts
+*.aux
+*.bbl
+*.blg
+*.fdb_latexmk
+*.fls
+*.out
+*.synctex.gz
+*.pdf
+
+# OS/editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
