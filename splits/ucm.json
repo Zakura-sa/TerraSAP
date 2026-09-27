@@ -1,0 +1,192 @@
+{
+  "dataset": "ucm",
+  "description": "Class order and file inventory from the available implementation.",
+  "imagefolder_classes": [
+    "agricultural",
+    "airplane",
+    "baseballdiamond",
+    "beach",
+    "buildings",
+    "chaparral",
+    "denseresidential",
+    "forest",
+    "freeway",
+    "golfcourse",
+    "harbor",
+    "intersection",
+    "mediumresidential",
+    "mobilehomepark",
+    "overpass",
+    "parkinglot",
+    "river",
+    "runway",
+    "sparseresidential",
+    "storagetanks",
+    "tenniscourt"
+  ],
+  "class_order": [
+    "agricultural",
+    "airplane",
+    "baseballdiamond",
+    "beach",
+    "buildings",
+    "chaparral",
+    "denseresidential",
+    "forest",
+    "freeway",
+    "golfcourse",
+    "harbor",
+    "intersection",
+    "mediumresidential",
+    "mobilehomepark",
+    "overpass",
+    "parkinglot",
+    "river",
+    "runway",
+    "sparseresidential",
+    "storagetanks",
+    "tenniscourt"
+  ],
+  "new_to_imagefolder": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20
+  ],
+  "sessions": [
+    [
+      "agricultural",
+      "airplane",
+      "baseballdiamond",
+      "beach",
+      "buildings",
+      "chaparral",
+      "denseresidential",
+      "forest",
+      "freeway",
+      "golfcourse",
+      "harbor",
+      "intersection"
+    ],
+    [
+      "mediumresidential",
+      "mobilehomepark",
+      "overpass"
+    ],
+    [
+      "parkinglot",
+      "river",
+      "runway"
+    ],
+    [
+      "sparseresidential",
+      "storagetanks",
+      "tenniscourt"
+    ]
+  ],
+  "class_counts": {
+    "agricultural": {
+      "train": 60,
+      "test": 40
+    },
+    "airplane": {
+      "train": 60,
+      "test": 40
+    },
+    "baseballdiamond": {
+      "train": 60,
+      "test": 40
+    },
+    "beach": {
+      "train": 60,
+      "test": 40
+    },
+    "buildings": {
+      "train": 60,
+      "test": 40
+    },
+    "chaparral": {
+      "train": 60,
+      "test": 40
+    },
+    "denseresidential": {
+      "train": 60,
+      "test": 40
+    },
+    "forest": {
+      "train": 60,
+      "test": 40
+    },
+    "freeway": {
+      "train": 60,
+      "test": 40
+    },
+    "golfcourse": {
+      "train": 60,
+      "test": 40
+    },
+    "harbor": {
+      "train": 60,
+      "test": 40
+    },
+    "intersection": {
+      "train": 60,
+      "test": 40
+    },
+    "mediumresidential": {
+      "train": 5,
+      "test": 95
+    },
+    "mobilehomepark": {
+      "train": 5,
+      "test": 95
+    },
+    "overpass": {
+      "train": 5,
+      "test": 95
+    },
+    "parkinglot": {
+      "train": 5,
+      "test": 95
+    },
+    "river": {
+      "train": 5,
+      "test": 95
+    },
+    "runway": {
+      "train": 5,
+      "test": 95
+    },
+    "sparseresidential": {
+      "train": 5,
+      "test": 95
+    },
+    "storagetanks": {
+      "train": 5,
+      "test": 95
+    },
+    "tenniscourt": {
+      "train": 5,
+      "test": 95
+    }
+  },
+  "total_train": 765,
+  "total_test": 1335
+}

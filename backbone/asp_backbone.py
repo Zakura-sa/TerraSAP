@@ -3,6 +3,7 @@ import torch
 import torch.nn as nn
 from timm.models.vision_transformer import VisionTransformer, PatchEmbed
 from utils.inc_net import get_backbone, BaseNet
+from utils.pretrained import pretrained_model_name
 import copy
 import math
 import numpy as np
@@ -17,7 +18,9 @@ from backbone.new_class_aware_classifier import NewClassAwareClassifier
 
 def build_promptmodel(modelname='vit_base_patch16_224',  Prompt_Token_num=10, VPT_type="Deep", args=None):
     
-    basic_model = timm.create_model(modelname, pretrained=True)
+    if args is None:
+        raise ValueError('Prompt model requires an experiment configuration')
+    basic_model = timm.create_model(pretrained_model_name(args, modelname), pretrained=True)
     if modelname in ['vit_base_patch16_224']:
         model = VPT_ViT(Prompt_Token_num=Prompt_Token_num,VPT_type=VPT_type, args=args)
     else:
@@ -50,6 +53,10 @@ class VPT_ViT(VisionTransformer):
                          drop_path_rate=drop_path_rate, embed_layer=embed_layer,
                          norm_layer=norm_layer, act_layer=act_layer)
                          
+        if args is None:
+            raise ValueError('VPT requires an experiment configuration')
+        if Prompt_Token_num <= 0 or Prompt_Token_num % 2:
+            raise ValueError('prompt_token_num must be a positive even integer')
         print('Using VPT model')
         self.args = args
         self.img_size = img_size
@@ -63,10 +70,10 @@ class VPT_ViT(VisionTransformer):
         # 设置空间感知提示标志
         self.spatial_aware_prompts = args.get('spatial_aware_prompts', False) if args else False
 
-        # 协同优化：空间上下文传递配置（阶段1）
+        # Spatial context pipeline configuration.
         self.enable_spatial_context_pipeline = args.get('enable_spatial_context_pipeline', False) if args else False
 
-        # 协同优化：双路径EMA配置（阶段2）
+        # Dual-path EMA configuration.
         self.enable_dual_path_ema = args.get('enable_dual_path_ema', False) if args else False
 
         if VPT_type == "Deep":
@@ -75,14 +82,14 @@ class VPT_ViT(VisionTransformer):
                 self.TIP = nn.Parameter(torch.zeros(depth, int(Prompt_Token_num/2), embed_dim))
             elif self.args["TIP_init"] == 'random':
                 self.TIP = nn.Parameter(torch.randn(depth, int(Prompt_Token_num/2), embed_dim))
-            # 使用空间感知提示编码器（temp.md设计）
+            # Spatially aware prompt encoder.
             if self.spatial_aware_prompts:
                 self.Prompt_Encoder = SpatialAwarePromptEncoder(args, depth, prompt_length=int(Prompt_Token_num/2), prompt_features=embed_dim)
             else:
                 self.Prompt_Encoder = PROMPT_Encoder(args, depth, prompt_length=int(Prompt_Token_num/2), prompt_featuers=embed_dim)
             self.Avg_TSP = torch.zeros(depth, int(Prompt_Token_num/2), embed_dim)
 
-            # 协同优化：双路径EMA（阶段2）
+            # Dual-path EMA state.
             if self.enable_dual_path_ema:
                 self.Avg_TSP_original = torch.zeros(depth, int(Prompt_Token_num/2), embed_dim)  # 原始TSP的EMA
                 self.Avg_TSP_modulated = torch.zeros(depth, int(Prompt_Token_num/2), embed_dim)  # 调制TSP的EMA
@@ -97,14 +104,14 @@ class VPT_ViT(VisionTransformer):
                 self.TIP = nn.Parameter(torch.zeros(1, int(Prompt_Token_num/2), embed_dim))
             elif self.args["TIP_init"] == 'random':
                 self.TIP = nn.Parameter(torch.randn(1, int(Prompt_Token_num/2), embed_dim))
-            # 使用空间感知提示编码器（temp.md设计）
+            # Spatially aware prompt encoder.
             if self.spatial_aware_prompts:
                 self.Prompt_Encoder = SpatialAwarePromptEncoder(args, 1, prompt_length=int(Prompt_Token_num/2), prompt_features=embed_dim)
             else:
                 self.Prompt_Encoder = PROMPT_Encoder(args, 1, prompt_length=int(Prompt_Token_num/2), prompt_featuers=embed_dim)
             self.Avg_TSP = torch.zeros(1, int(Prompt_Token_num/2), embed_dim)
 
-            # 协同优化：双路径EMA（阶段2）
+            # Dual-path EMA state.
             if self.enable_dual_path_ema:
                 self.Avg_TSP_original = torch.zeros(1, int(Prompt_Token_num/2), embed_dim)  # 原始TSP的EMA
                 self.Avg_TSP_modulated = torch.zeros(1, int(Prompt_Token_num/2), embed_dim)  # 调制TSP的EMA
@@ -115,7 +122,7 @@ class VPT_ViT(VisionTransformer):
 
         self.Prompt_Token_num = Prompt_Token_num
 
-        # 空间感知提示现在集成在Prompt_Encoder中（temp.md设计）
+        # Spatial awareness is implemented by Prompt_Encoder.
         self.spatial_aware_prompts = args.get('spatial_aware_prompts', False) if args else False
         if self.spatial_aware_prompts:
             print("Using Spatial-Aware Prompt Encoder")
@@ -155,10 +162,10 @@ class VPT_ViT(VisionTransformer):
         # 获取patch嵌入
         x_patches = self.patch_embed(x)  # [B, N, D]
 
-        # 协同优化：空间上下文传递机制（阶段1）
+        # Spatial context transfer.
         spatial_context = None
 
-        # 空间感知提示编码器会自动处理空间增强（temp.md设计）
+        # The spatial prompt encoder handles spatial enhancement.
         if self.spatial_aware_prompts and isinstance(self.Prompt_Encoder, SpatialAwarePromptEncoder):
             # 获取图像特征用于空间感知提示生成
             x_features = x_patches.mean(dim=1)  # [B, D] 全局特征

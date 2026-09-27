@@ -11,14 +11,14 @@ def main():
     train(args)
 
 def load_json(setting_path):
-    with open(setting_path) as data_file:
+    with open(setting_path, encoding='utf-8') as data_file:
         param = json.load(data_file)
     return param
 
 def setup_parser():
-    parser = argparse.ArgumentParser(description='Reproduce of multiple pre-trained incremental learning algorthms.')
-    parser.add_argument('--config', type=str, default='./exps/simplecil.json',
-                        help='Json file of settings.')
+    parser = argparse.ArgumentParser(description='TerraSAP training and evaluation')
+    parser.add_argument('--config', type=str, required=True,
+                        help='Path to an experiment JSON config.')
     return parser
 
 if __name__ == '__main__':

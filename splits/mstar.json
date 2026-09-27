@@ -1,0 +1,110 @@
+{
+  "dataset": "mstar",
+  "description": "Class order and file inventory from the available implementation.",
+  "imagefolder_classes": [
+    "2S1",
+    "BMP2",
+    "BRDM2",
+    "BTR60",
+    "BTR70",
+    "D7",
+    "T62",
+    "T72",
+    "ZIL131",
+    "ZSU234"
+  ],
+  "class_order": [
+    "BTR70",
+    "2S1",
+    "BRDM2",
+    "BMP2",
+    "ZIL131",
+    "T62",
+    "D7",
+    "BTR60",
+    "T72",
+    "ZSU234"
+  ],
+  "new_to_imagefolder": [
+    4,
+    0,
+    2,
+    1,
+    8,
+    6,
+    5,
+    3,
+    7,
+    9
+  ],
+  "sessions": [
+    [
+      "BTR70",
+      "2S1",
+      "BRDM2",
+      "BMP2"
+    ],
+    [
+      "ZIL131"
+    ],
+    [
+      "T62"
+    ],
+    [
+      "D7"
+    ],
+    [
+      "BTR60"
+    ],
+    [
+      "T72"
+    ],
+    [
+      "ZSU234"
+    ]
+  ],
+  "class_counts": {
+    "BTR70": {
+      "train": 233,
+      "test": 196
+    },
+    "2S1": {
+      "train": 299,
+      "test": 274
+    },
+    "BRDM2": {
+      "train": 298,
+      "test": 274
+    },
+    "BMP2": {
+      "train": 233,
+      "test": 196
+    },
+    "ZIL131": {
+      "train": 5,
+      "test": 274
+    },
+    "T62": {
+      "train": 5,
+      "test": 273
+    },
+    "D7": {
+      "train": 5,
+      "test": 274
+    },
+    "BTR60": {
+      "train": 5,
+      "test": 195
+    },
+    "T72": {
+      "train": 5,
+      "test": 196
+    },
+    "ZSU234": {
+      "train": 5,
+      "test": 274
+    }
+  },
+  "total_train": 1093,
+  "total_test": 2426
+}

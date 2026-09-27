@@ -5,14 +5,17 @@ from torch.utils.data import Dataset
 from torchvision import transforms
 from utils.data import iCIFAR10, iCIFAR100, iImageNet100, iImageNet1000, iCIFAR224, iImageNetR,iImageNetA,CUB, objectnet, omnibenchmark, vtab, NWPU_RESISC45, UCMerced, SIRIWHU, So2SatLCZ42, MSTAR, PaviaUniversity, Houston2013
 import random
+from utils.support import SupportSampler
 
 
 class DataManager(object):
     def __init__(self, dataset_name, shuffle, seed, init_cls, increment, args):
         self.args = args
         self.dataset_name = dataset_name
+        self.support_sampler = SupportSampler(seed)
         self._setup_data(dataset_name, shuffle, seed)
-        assert init_cls <= len(self._class_order), "No enough classes."
+        if not 0 < init_cls <= len(self._class_order) or increment <= 0:
+            raise ValueError('Invalid base/increment class counts')
         self._increments = [init_cls]
         while sum(self._increments) + increment < len(self._class_order):
             self._increments.append(increment)
@@ -59,9 +62,14 @@ class DataManager(object):
         data, targets = [], []
         for idx in indices:
             if m_rate is None:
-                class_data, class_targets = self._select(
-                    x, y, low_range=idx, high_range=idx + 1, kshot=kshot
-                )
+                if source == 'train' and isinstance(kshot, int) and idx >= self.args['init_cls']:
+                    selected = np.flatnonzero(y == idx)
+                    selected = self.support_sampler.select(idx, selected.tolist(), kshot)
+                    class_data, class_targets = x[selected], y[selected]
+                else:
+                    class_data, class_targets = self._select(
+                        x, y, low_range=idx, high_range=idx + 1
+                    )
             else:
                 class_data, class_targets = self._select_rmm(
                     x, y, low_range=idx, high_range=idx + 1, m_rate=m_rate, kshot=kshot
@@ -146,7 +154,11 @@ class DataManager(object):
         self._test_data, self._test_targets = idata.test_data, idata.test_targets
         self.use_path = idata.use_path
 
-        # Transforms
+        # The paper presets opt into a common transform schedule; legacy
+        # configurations retain their dataset-specific augmentation options.
+        if self.args.get('paper_protocol', False):
+            idata.train_trsf = [transforms.RandomResizedCrop(224), transforms.RandomHorizontalFlip(p=0.5)]
+            idata.test_trsf = [transforms.Resize(256), transforms.CenterCrop(224)]
         self._train_trsf = idata.train_trsf
         self._test_trsf = idata.test_trsf
         self._common_trsf = idata.common_trsf
@@ -154,8 +166,7 @@ class DataManager(object):
         # Order
         order = [i for i in range(len(np.unique(self._train_targets)))]
         if shuffle:
-            np.random.seed(seed)
-            order = np.random.permutation(len(order)).tolist()
+            order = np.random.RandomState(seed).permutation(len(order)).tolist()
         else:
             order = idata.class_order
         self._class_order = order
@@ -192,7 +203,7 @@ class DataManager(object):
 
     def getlen(self, index):
         y = self._train_targets
-        return np.sum(np.where(y == index))
+        return np.count_nonzero(y == index)
 
 
 class DummyDataset(Dataset):
