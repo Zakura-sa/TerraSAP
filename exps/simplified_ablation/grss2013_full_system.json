@@ -39,7 +39,7 @@
   "_comment": "Houston 2013 FSCIL experiment (Base7 + 4 increments, 5-shot).",
   "_experiment_name": "Houston2013 Full System",
   "_experiment_type": "grss2013_full_system",
-  "_description": "TerraSAP full system on Houston 2013 with reviewer-requested PCA patches.",
+  "_description": "TerraSAP full system on Houston 2013 with PCA patches.",
 
   "_comment_spatial_prompts": "Spatial prompt configuration",
   "spatial_aware_prompts": true,

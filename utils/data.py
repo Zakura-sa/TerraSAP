@@ -6,6 +6,26 @@ import torch.nn.functional as F
 import random
 import math
 from PIL import Image
+from pathlib import Path
+
+
+def _load_scene_folders(args, folder, num_classes, expected_names=None):
+    override_keys = {
+        'NWPU-RESISC45': 'nwpu_data_root',
+        'UCMerced_LandUse_processed': 'ucm_data_root',
+        'MSTAR': 'mstar_data_root',
+    }
+    override = args.get(override_keys.get(folder, ''))
+    root = Path(override) if override else Path(args.get('data_root', 'data')) / folder
+    train = datasets.ImageFolder(str(root / 'train'))
+    test = datasets.ImageFolder(str(root / 'test'))
+    if train.class_to_idx != test.class_to_idx:
+        raise ValueError(f'{folder}: train/test class mappings differ')
+    if len(train.classes) != num_classes:
+        raise ValueError(f'{folder}: expected {num_classes} classes')
+    if expected_names is not None and set(train.classes) != set(expected_names):
+        raise ValueError(f'{folder}: unexpected class names')
+    return train, test
 
 
 class MixUp:
@@ -649,11 +669,7 @@ class NWPU_RESISC45(iData):
         return None
 
     def download_data(self):
-        train_dir = "./data/NWPU-RESISC45/train/"
-        test_dir = "./data/NWPU-RESISC45/test/"
-
-        train_dset = datasets.ImageFolder(train_dir)
-        test_dset = datasets.ImageFolder(test_dir)
+        train_dset, test_dset = _load_scene_folders(self.args, 'NWPU-RESISC45', 45)
 
         self.train_data, self.train_targets = split_images_labels(train_dset.imgs)
         self.test_data, self.test_targets = split_images_labels(test_dset.imgs)
@@ -681,10 +697,7 @@ class UCMerced(iData):
         self.class_order = np.arange(21).tolist()
 
     def download_data(self):
-        train_dir = "./data/UCMerced_LandUse_processed/train/"
-        test_dir = "./data/UCMerced_LandUse_processed/test/"
-        train_dset = datasets.ImageFolder(train_dir)
-        test_dset = datasets.ImageFolder(test_dir)
+        train_dset, test_dset = _load_scene_folders(self.args, 'UCMerced_LandUse_processed', 21)
         self.train_data, self.train_targets = split_images_labels(train_dset.imgs)
         self.test_data, self.test_targets = split_images_labels(test_dset.imgs)
 
@@ -711,10 +724,7 @@ class SIRIWHU(iData):
         self.class_order = np.arange(12).tolist()
 
     def download_data(self):
-        train_dir = "./data/SIRI-WHU/train/"
-        test_dir = "./data/SIRI-WHU/test/"
-        train_dset = datasets.ImageFolder(train_dir)
-        test_dset = datasets.ImageFolder(test_dir)
+        train_dset, test_dset = _load_scene_folders(self.args, 'SIRI-WHU', 12)
         self.train_data, self.train_targets = split_images_labels(train_dset.imgs)
         self.test_data, self.test_targets = split_images_labels(test_dset.imgs)
 
@@ -735,10 +745,7 @@ class So2SatLCZ42(iData):
         self.class_order = np.arange(17).tolist()
 
     def download_data(self):
-        train_dir = "./data/So2Sat-LCZ42_ImageFolder/train/"
-        test_dir = "./data/So2Sat-LCZ42_ImageFolder/test/"
-        train_dset = datasets.ImageFolder(train_dir)
-        test_dset = datasets.ImageFolder(test_dir)
+        train_dset, test_dset = _load_scene_folders(self.args, 'So2Sat-LCZ42_ImageFolder', 17)
         self.train_data, self.train_targets = split_images_labels(train_dset.imgs)
         self.test_data, self.test_targets = split_images_labels(test_dset.imgs)
 
@@ -760,10 +767,7 @@ class PaviaUniversity(iData):
         self.class_order = [1, 2, 3, 4, 5, 0, 6, 7, 8]
 
     def download_data(self):
-        train_dir = "./data/PaviaU_ImageFolder/train/"
-        test_dir = "./data/PaviaU_ImageFolder/test/"
-        train_dset = datasets.ImageFolder(train_dir)
-        test_dset = datasets.ImageFolder(test_dir)
+        train_dset, test_dset = _load_scene_folders(self.args, 'PaviaU_ImageFolder', 9)
         self.train_data, self.train_targets = split_images_labels(train_dset.imgs)
         self.test_data, self.test_targets = split_images_labels(test_dset.imgs)
 
@@ -785,10 +789,7 @@ class Houston2013(iData):
         self.class_order = [0, 1, 2, 3, 4, 5, 14, 6, 7, 8, 9, 10, 11, 12, 13]
 
     def download_data(self):
-        train_dir = "./data/GRSS2013_ImageFolder/train/"
-        test_dir = "./data/GRSS2013_ImageFolder/test/"
-        train_dset = datasets.ImageFolder(train_dir)
-        test_dset = datasets.ImageFolder(test_dir)
+        train_dset, test_dset = _load_scene_folders(self.args, 'GRSS2013_ImageFolder', 15)
         self.train_data, self.train_targets = split_images_labels(train_dset.imgs)
         self.test_data, self.test_targets = split_images_labels(test_dset.imgs)
 
@@ -895,15 +896,9 @@ class MSTAR(iData):
         """加载MSTAR数据集"""
         print("[MSTAR] 加载标准数据集")
 
-        train_dir = "./data/MSTAR/train/"
-        test_dir = "./data/MSTAR/test/"
-
-        print(f"   训练目录: {train_dir}")
-        print(f"   测试目录: {test_dir}")
-
-        # 使用ImageFolder加载数据
-        train_dset = datasets.ImageFolder(train_dir)
-        test_dset = datasets.ImageFolder(test_dir)
+        train_dset, test_dset = _load_scene_folders(
+            self.args, 'MSTAR', 10, self.standard_class_order
+        )
 
         # 获取原始数据和标签
         self.train_data, self.train_targets = split_images_labels(train_dset.imgs)

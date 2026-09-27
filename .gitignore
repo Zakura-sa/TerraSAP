@@ -1,3 +1,12 @@
+# Local tooling, generated runs, and private manuscript material
+.pi/
+.pytest_cache/
+runs/
+*.safetensors
+*.npz
+*.zip
+*.tex
+
 # Python
 __pycache__/
 *.py[cod]

@@ -26,7 +26,7 @@ colors = {
 }
 
 # ==========================================
-# 2. 数据准备 (来源于 TerraSAP.tex Table VII)
+# 2. Embedded values for the parameter-sensitivity figure
 # ==========================================
 # 结构: '文件名': { 'x_label': 'X轴标题', 'ticks': [刻度], 'data': {'NWPU': [], 'MSTAR': [], 'UCM': []} }
 

@@ -1,10 +1,7 @@
 """
 空间感知提示编码器 (Spatial-Aware Prompt Encoder)
 
-基于temp.md中的设计理念实现
-功能：在ASP的提示编码层面增强空间感知能力，深度集成到提示生成过程
-
-更新：集成统一空间计算中心，避免重复计算（阶段4任务4.1）
+在ASP的提示编码层面增强空间感知能力；共享空间计算结果以避免重复计算。
 """
 
 import torch
@@ -143,7 +140,7 @@ class LearnablePositionalEncoding2D(nn.Module):
 
 class AdaptivePositionalEncoding2D(nn.Module):
     """
-    自适应2D位置编码（基于temp.md设计）
+    自适应2D位置编码
     结合固定编码和可学习缩放因子，支持高效缓存
     """
 
@@ -315,7 +312,7 @@ class SpatialAwarePromptEncoder(nn.Module, SpatialAwareModule):
     空间感知提示编码器
     添加2D位置编码和相对位置注意力，深度集成到ASP的提示生成过程
 
-    更新：支持统一空间计算，避免重复计算（阶段4任务4.1）
+    支持共享空间计算结果，避免重复计算。
     """
 
     def __init__(self, args, depth, prompt_length, prompt_features=768):
@@ -356,7 +353,7 @@ class SpatialAwarePromptEncoder(nn.Module, SpatialAwareModule):
                 modulation_strength=args.get('modulation_strength', 0.05)
             )
             print(f"✅ 轻量级特征调制v1已启用: strength={args.get('modulation_strength', 0.05)}, 参数数量={self.feature_modulation.get_parameter_count()}")
-        # 自适应调制v2已移除（效果不佳，-0.93%性能下降）
+        # 未启用特征调制时保持原始提示。
         else:
             self.feature_modulation = None
         
@@ -368,16 +365,16 @@ class SpatialAwarePromptEncoder(nn.Module, SpatialAwareModule):
                 position_encoding_type = args.get('position_encoding_type', 'sinusoidal_2d') if args else 'sinusoidal_2d'
 
                 if position_encoding_type == 'standard_1d':
-                    # A1.1: 标准1D位置编码（实际上不使用空间感知）
+                    # 标准1D位置编码（不使用空间感知）
                     self.pos_embedding = None
                 elif position_encoding_type == 'sinusoidal_2d':
-                    # A1.2: 2D正弦位置编码（优化版本）
+                    # 2D正弦位置编码
                     self.pos_embedding = PositionalEncoding2D(prompt_features)
                 elif position_encoding_type == 'learnable_2d':
-                    # A1.3: 2D可学习位置编码（优化版本）
+                    # 2D可学习位置编码
                     self.pos_embedding = LearnablePositionalEncoding2D(prompt_features)
                 elif position_encoding_type == 'adaptive_2d':
-                    # A1.4: 自适应2D位置编码（新增，基于temp.md设计）
+                    # 自适应2D位置编码
                     self.pos_embedding = AdaptivePositionalEncoding2D(prompt_features)
                 else:
                     print(f"Warning: Unknown position_encoding_type '{position_encoding_type}', using 'adaptive_2d'")
@@ -395,13 +392,13 @@ class SpatialAwarePromptEncoder(nn.Module, SpatialAwareModule):
             spatial_mlp_type = args.get('spatial_mlp_type', 'compress_expand') if args else 'compress_expand'
 
             if spatial_mlp_type == 'none':
-                # A3.1: 无空间关系MLP
+                # 无空间关系MLP
                 self.spatial_relation_mlp = None
             elif spatial_mlp_type == 'linear':
-                # A3.3: 线性变换结构
+                # 线性变换结构
                 self.spatial_relation_mlp = nn.Linear(prompt_features, prompt_features)
             elif spatial_mlp_type == 'compress_expand':
-                # A3.2: 压缩-扩展结构 (默认)
+                # 压缩-扩展结构 (默认)
                 self.spatial_relation_mlp = nn.Sequential(
                     nn.Linear(prompt_features, prompt_features // 2),
                     nn.ReLU(inplace=True),
@@ -432,7 +429,7 @@ class SpatialAwarePromptEncoder(nn.Module, SpatialAwareModule):
             nn.Linear(prompt_features, prompt_length * prompt_features)
         )
 
-        # 协同优化：空间上下文传递机制（阶段1）
+        # 空间上下文传递机制
         self.enable_spatial_context_transfer = args.get('enable_spatial_context_transfer', False) if args else False
         if self.enable_spatial_context_transfer:
             self.spatial_context_dim = args.get('spatial_context_dim', 128) if args else 128
@@ -516,7 +513,7 @@ class SpatialAwarePromptEncoder(nn.Module, SpatialAwareModule):
             self.enable_feature_modulation_v1pro = old_enable_feature_modulation_v1pro
 
     def _apply_spatial_context_modulation(self, spatial_prompts, spatial_context):
-        """应用空间上下文感知的特征调制（协同优化阶段1）"""
+        """应用空间上下文感知的特征调制"""
         if (self.enable_feature_modulation or self.enable_feature_modulation_v1pro) and hasattr(self, 'feature_modulation') and self.feature_modulation is not None:
             # 检查特征调制模块是否支持空间上下文
             if hasattr(self.feature_modulation, 'forward_with_spatial_context'):
@@ -529,7 +526,7 @@ class SpatialAwarePromptEncoder(nn.Module, SpatialAwareModule):
 
     def generate_spatial_context(self, tip_features, image_features):
         """
-        生成空间上下文向量（协同优化阶段1）
+        生成空间上下文向量
 
         Args:
             tip_features: TIP特征 [batch_size, feature_dim]
@@ -568,7 +565,7 @@ class SpatialAwarePromptEncoder(nn.Module, SpatialAwareModule):
 
     def forward_with_context(self, tip_features, image_features, spatial_coords=None):
         """
-        带空间上下文输出的前向传播（协同优化阶段1）
+        带空间上下文输出的前向传播
 
         Args:
             tip_features: TIP特征 [batch_size, feature_dim]

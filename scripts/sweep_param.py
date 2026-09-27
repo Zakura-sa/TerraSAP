@@ -27,7 +27,7 @@ def dump_json (obj ,path :Path ):
 
 
 def param_grids ():
-    """Return parameter grids per NEXT.md v1.2 (updated)."""
+    """Return parameter grids for the retained experiment presets."""
     grids_A ={
     "avg_alpha":[0.30 ,0.60 ,0.75 ,0.85 ,0.95 ],
     "dual_ema_fusion_weight":[0.35 ,0.45 ,0.55 ,0.65 ],
@@ -39,7 +39,6 @@ def param_grids ():
     }
     grids_C ={
     "new_class_noise_scale":[0.00 ,0.10 ,0.20 ],
-    "fusion_adaptation_rate":[0.00 ,0.10 ,0.30 ],
     # anchor_lambda: NWPU defaults ~0.07; provide generic set
     "anchor_lambda":[0.00 ,0.07 ,0.12 ],
     }
@@ -153,17 +152,6 @@ def build_runs (args ):
                     dump_json (cfg ,out_cfg )
                     runs .append ((ds ,'interaction',tag ,out_cfg ))
 
-                    # EMA strategy compare: fixed vs dynamic (same dual_ema_fusion_weight=0.45)
-            for strat in ['fixed','dynamic']:
-                cfg =dict (base_cfg )
-                cfg ['adaptive_fusion_strategy']=strat 
-                cfg ['dual_ema_fusion_weight']=0.45 
-                tag =f"ema_strategy={strat}__dual_ema_fusion_weight=0.45"
-                cfg ['prefix']=f"{base_cfg.get('prefix','sweep')}_ema_{tag}"
-                cfg ['model_prefix']=f"{base_cfg.get('model_prefix','sweep')}_ema_{tag}"
-                out_cfg =Path (f"runs/sweeps/{ds}/extras/ema_strategy/{tag}/config.json")
-                dump_json (cfg ,out_cfg )
-                runs .append ((ds ,'ema_strategy',strat ,out_cfg ))
 
     return runs 
 
@@ -180,14 +168,14 @@ def run_job (cfg_path :Path ,python_exec :str =sys .executable ):
 
 
 def main ():
-    parser =argparse .ArgumentParser (description ='Sweep TerraSAP params (per NEXT.md plan)')
+    parser =argparse .ArgumentParser (description ='Sweep TerraSAP experiment parameters')
     parser .add_argument ('--dataset',choices =['nwpu','ucmerced','mstar','all'],default ='all')
     parser .add_argument ('--category',choices =['A','B','C','all'],default ='all')
     parser .add_argument ('--seed',type =int ,default =2025 )
     parser .add_argument ('--max_parallel',type =int ,default =1 )
     parser .add_argument ('--python_exec',type =str ,default =sys .executable ,help ='Python interpreter with PyTorch installed')
     parser .add_argument ('--dry_run',action ='store_true')
-    parser .add_argument ('--extras',action ='store_true',help ='Include NWPU extras: 2x2 interaction & EMA strategy compare')
+    parser .add_argument ('--extras',action ='store_true',help ='Include the NWPU 2x2 EMA-weight interaction grid')
     parser .add_argument ('--nwpu_root',type =str ,default =None ,help ='NWPU-RESISC45 dataset root (contains train/ and test/)')
     parser .add_argument ('--mstar_root',type =str ,default =None ,help ='MSTAR dataset root (contains train/ and test/)')
     parser .add_argument ('--ucm_root',type =str ,default =None ,help ='UCMerced dataset root (contains train/ and test/)')

@@ -1,5 +1,3 @@
-# watermark version
-
 import logging
 import os
 import numpy as np
@@ -430,7 +428,7 @@ class Learner(BaseLearner):
             else:
                 self.replace_fc(train_loader_for_protonet, self._network, None)
 
-        if os.path.exists(self.args["base_model_path"]) and self._cur_task==0:
+        if self.args.get('resume', False) and os.path.exists(self.args["base_model_path"]) and self._cur_task == 0:
             logging.info('================= load base model from: {} ================='.format(self.args["base_model_path"]))
             # 安全加载模型，处理不匹配的键和设备映射
             checkpoint = torch.load(self.args["base_model_path"], map_location=self._device)
@@ -473,22 +471,19 @@ class Learner(BaseLearner):
                     optimizer = optim.SGD(self._network.parameters(), momentum=0.9, lr=self.init_lr,weight_decay=self.weight_decay)
                 elif self.args['optimizer'] in ['adam', 'adamw']:
                     optimizer=optim.AdamW(self._network.parameters(), lr=self.init_lr, weight_decay=self.weight_decay)
+                else:
+                    raise ValueError(f"Unknown optimizer: {self.args['optimizer']}")
 
             scheduler=optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=self.args['tuned_epoch'], eta_min=self.min_lr)
 
             self._init_train(train_loader, test_loader, optimizer, scheduler)
             if self._cur_task == 0:
-                # 保存最佳模型并删除非最佳模型
-                best_model_path = self.args["base_model_path"]
-                torch.save(self._network.state_dict(), best_model_path)
-                logging.info(f"💾 基础任务最佳模型已保存: {best_model_path}")
-
-                # 删除同一实验的其他种子模型（如果存在）
-                self._cleanup_non_best_models(best_model_path)
+                model_path = self.args['base_model_path']
+                torch.save(self._network.state_dict(), model_path)
+                logging.info('Final-epoch base model saved: %s', model_path)
 
         if self._cur_task == 0:
             self.update_ema_prompt(train_loader_for_protonet, mode='base')
-            self.replace_fc(train_loader_for_protonet, self._network, None)
         else:
             # 增量任务完成，记录日志但不保存模型
             logging.info(f"📝 增量学习任务 {self._cur_task} 完成，未保存模型")
@@ -580,13 +575,15 @@ class Learner(BaseLearner):
         measurement_runs = 200
         times = []
 
-        torch.cuda.synchronize()  # 确保GPU操作完成
+        if self._device.type == 'cuda':
+            torch.cuda.synchronize(self._device)
 
         for _ in range(measurement_runs):
             start_time = time.time()
             with torch.no_grad():
                 _ = self._network(single_input)["logits"]
-            torch.cuda.synchronize()  # 确保GPU操作完成
+            if self._device.type == 'cuda':
+                torch.cuda.synchronize(self._device)
             end_time = time.time()
             times.append((end_time - start_time) * 1000)  # 转换为毫秒
 
@@ -609,11 +606,6 @@ class Learner(BaseLearner):
             total_epoch = self.args['fs_epoch']
         else:
             total_epoch = self.args['tuned_epoch']
-
-        # 最佳模型跟踪
-        best_acc = 0.0
-        best_epoch = 0
-        best_model_state = None
 
         # 添加epoch进度条
         epoch_pbar = tqdm(range(total_epoch), desc=f"Task {self._cur_task} Training", unit="epoch")
@@ -708,13 +700,6 @@ class Learner(BaseLearner):
             test_cur_acc = self._compute_accuracy(self._network, self.test_curr_loader)
             test_acc = self._compute_accuracy(self._network, test_loader)
 
-            # 保存最佳模型
-            if test_acc > best_acc:
-                best_acc = test_acc
-                best_epoch = epoch + 1
-                best_model_state = self._network.state_dict().copy()
-                logging.info(f"🎯 发现更优模型! test_acc: {test_acc:.4f} (Epoch {epoch + 1})")
-
             # 计算平均损失，处理异常值
             avg_loss = losses / len(train_loader) if len(train_loader) > 0 else 0.0
             if torch.isnan(torch.tensor(avg_loss)) or torch.isinf(torch.tensor(avg_loss)):
@@ -738,12 +723,7 @@ class Learner(BaseLearner):
             )
             logging.info(info)
 
-        # 恢复最佳模型状态
-        if best_model_state is not None:
-            self._network.load_state_dict(best_model_state)
-            logging.info(f"✅ 训练完成: 共{total_epoch}轮，最佳性能在第{best_epoch}轮")
-        else:
-            logging.info(f"✅ 训练完成: 共{total_epoch}轮，未找到最佳模型")
+        logging.info('Training completed: %s epochs; final-epoch weights retained', total_epoch)
 
 
     def update_ema_prompt(self, train_loader, mode='new'):
@@ -838,7 +818,7 @@ class Learner(BaseLearner):
 
                 prompt_list.append(prompt.detach().cpu())
 
-        # 协同优化：双路径EMA更新（阶段2）
+        # 双路径EMA更新
         if hasattr(self._network.backbone, 'enable_dual_path_ema') and self._network.backbone.enable_dual_path_ema:
             # 双路径EMA更新
             prompt_mean = torch.mean(torch.cat(prompt_list, dim=0), dim=0)

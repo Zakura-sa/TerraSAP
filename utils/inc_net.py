@@ -1,11 +1,12 @@
 import copy
 from torch import nn
 import timm
+from utils.pretrained import pretrained_model_name
 
 def get_backbone(args, pretrained=False):
     name = args["backbone_type"].lower()
     if name == "pretrained_vit_b16_224" or name == "vit_base_patch16_224":
-        model = timm.create_model("vit_base_patch16_224",pretrained=True, num_classes=0)
+        model = timm.create_model(pretrained_model_name(args), pretrained=True, num_classes=0)
         model.out_dim = 768
         return model.eval()
     

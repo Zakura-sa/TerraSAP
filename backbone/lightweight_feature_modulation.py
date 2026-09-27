@@ -31,7 +31,7 @@ class LightweightFeatureModulation(nn.Module):
         self.semantic_scale = nn.Parameter(torch.ones(1))
         self.consistency_weight = nn.Parameter(torch.tensor(0.5))
 
-        # 协同优化：空间上下文感知调制（阶段1）
+        # 空间上下文感知调制
         self.enable_spatial_context_modulation = args.get('enable_spatial_context_modulation', False) if args else False
         if self.enable_spatial_context_modulation:
             # 空间上下文融合层（极少参数）
@@ -151,7 +151,7 @@ class LightweightFeatureModulation(nn.Module):
         return normalized
 
     def _spatial_context_guided_modulation(self, tsp, spatial_context):
-        """空间上下文引导的调制（协同优化阶段1 - 优化版）"""
+        """空间上下文引导的调制"""
         if spatial_context is None or self.context_fusion_layer is None:
             return tsp
 
@@ -187,7 +187,7 @@ class LightweightFeatureModulation(nn.Module):
 
     def forward_with_spatial_context(self, tsp, spatial_context=None, training=True):
         """
-        带空间上下文的特征调制（协同优化阶段1）
+        带空间上下文的特征调制
 
         Args:
             tsp: 原始TSP [B, depth, prompt_length, feature_dim]

@@ -34,7 +34,7 @@ class NewClassAwareClassifier(CosineLinear):
         self.noise_scale = 0.1  # 增强原型的噪声尺度
         self.use_old_weight_fallback = True  # 是否使用旧权重平均作为回退
 
-        # 协同优化：空间感知分类器初始化（阶段1）
+        # 空间感知分类器初始化
         self.enable_spatial_aware_classifier_init = args.get('enable_spatial_aware_classifier_init', False) if args else False
         if self.enable_spatial_aware_classifier_init:
             logging.info(f"✅ 空间感知分类器初始化已启用")
@@ -162,7 +162,7 @@ class NewClassAwareClassifier(CosineLinear):
 
     def _extract_spatial_aware_features(self, support_loader, backbone, device):
         """
-        提取空间感知的支持集特征（协同优化阶段1）
+        提取空间感知的支持集特征
 
         Args:
             support_loader: 支持集数据加载器
@@ -275,7 +275,7 @@ class NewClassAwareClassifier(CosineLinear):
 
     def _compute_spatial_aware_class_weight(self, class_features, class_spatial_contexts):
         """
-        计算空间感知的类别初始化权重（协同优化阶段1）
+        计算空间感知的类别初始化权重
 
         Args:
             class_features: 类别的特征 [N, feature_dim]

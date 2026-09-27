@@ -1,0 +1,5 @@
+numpy
+matplotlib
+seaborn
+pdf2image
+pillow
