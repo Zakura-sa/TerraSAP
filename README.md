@@ -6,7 +6,7 @@ Spatially Aware Prompt-Based Framework for Few-Shot Class-Incremental Learning i
 
 TerraSAP combines spatially aware prompts (SAPM), a new class-aware classifier (NCAC), and prompt EMA interfaces on a frozen ViT-B/16. This repository contains research code, experiment configurations, dataset preparation scripts, and reference split inventories. Datasets and trained checkpoints are not included.
 
-Use `main` for the integrated code. `repro/paper-protocol-20260927` retains the protocol/reproducibility integration already merged through [PR #1](https://github.com/Zakura-sa/TerraSAP/pull/1), not a separate pending delivery. See [repository status](docs/repository-status.md) for verified refs, existing checks, and unresolved implementation/provenance gaps. Those checks do not reproduce the paper's published accuracies.
+Use `main` for the integrated code. `repro/paper-protocol-20260927` retains the protocol/reproducibility integration already merged through [PR #1](https://github.com/Zakura-sa/TerraSAP/pull/1), not a separate pending delivery. See [repository status](docs/repository-status.md) for verified refs, existing checks, and unresolved implementation/provenance gaps.
 
 ## Setup
 

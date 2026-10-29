@@ -12,8 +12,9 @@ Read [README.md](README.md), [repository status](docs/repository-status.md), [pr
 ## Scientific boundaries
 
 - Distinguish published results, reconstructed source, protocol presets, mocked/static checks, and newly measured results. Engineering checks do not validate or overturn historical scientific conclusions.
-- Preserve existing method definitions, seed lists, training budgets, class/session plans, and reported results unless a separate scientific change is explicitly authorized. Keep documented SAPM/NCAC/DPEMA and checkpoint/split limitations visible.
-- Do not start training, load models or weights, launch experiments, or download datasets for maintenance work. Full model imports/forwards and GPU validation require separate authorization.
+- Follow `research_owner`'s current queue and authorized protocol. Continue routine fixes, regression checks, and already authorized steps without seeking repeated approval for unchanged scope.
+- Preserve existing method definitions, seed lists, training budgets, class/session plans, and reported results. Changes to the research question, data, budget, or evaluation protocol (including metrics) go to `research_owner` for a decision. Keep documented SAPM/NCAC/DPEMA and checkpoint/split limitations visible.
+- Use lightweight CPU checks for maintenance unless the current queue already authorizes model/weight loading, training, experiments, GPU validation, or data downloads.
 - Escalate unresolved provenance, complex cross-interface changes, missing credentials, and scope/API decisions rather than guessing.
 
 ## Lightweight validation and delivery
@@ -28,4 +29,6 @@ For documentation/configuration work, also check relative Markdown links, parse 
 
 Stage explicit paths only; never use `git add -A`. Commit/push only the reviewed selection to a named repair branch, without force pushing. Read back the remote ref and report the commit and PR applicability. Do not merge/close PRs or change repository visibility automatically.
 
-Executor-managed `.pi/settings.json`, local model configuration, and research-role prompts are outside this maintenance scope. Do not edit them.
+Research agents use `openai-codex/gpt-6.1-sol` with `thinking=max` and `fast=false`.
+
+The executor exclusively manages `.pi/settings.json`, local model configuration, and research-role prompts. Leave these files to the executor.

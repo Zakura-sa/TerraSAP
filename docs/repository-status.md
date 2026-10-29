@@ -1,6 +1,6 @@
 # Repository and reproduction status
 
-Verified against GitHub on **2026-10-29 (UTC)**. This is a delivery/evidence map, not a new experiment report.
+Verified against GitHub on **2026-10-29 (UTC)**.
 
 ## Which branch to use
 
@@ -44,8 +44,6 @@ See [implementation.md](implementation.md) and [datasets.md](datasets.md) for th
 - Default evaluation disables modulation, making the two EMA streams identical; the distinct dual-path effect is **not implemented** on that path. The adaptive-fusion utility is not wired into the main training path.
 - Saved base weights are not a complete incremental recovery checkpoint; extension preprocessing/class orders/session plans still need reconciliation before scientific comparisons.
 
-These limitations are preserved, not silently repaired or used to revise historical conclusions. Completing them or reporting accuracy requires a separately authorized scientific/provenance validation effort.
-
 ## Local diff hygiene
 
 The original reproduction checkout was deliberately left untouched:
@@ -68,4 +66,4 @@ gh api repos/Zakura-sa/TerraSAP/pulls/1
 gh api 'repos/Zakura-sa/TerraSAP/pulls?state=all&per_page=100'
 ```
 
-The pinned diff is expected to be empty; live branch tips may advance. Reverify API state instead of treating branch names or an earlier report as proof. This repair does not merge/close PRs or alter repository visibility.
+The pinned diff is expected to be empty; live branch tips may advance. Reverify API state instead of treating branch names or an earlier report as proof.
